@@ -1,6 +1,5 @@
 require 'stoffle/version'
-
-module Stoffle
-  class Error < StandardError; end
-  # Your code goes here...
-end
+require 'stoffle/location'
+require 'stoffle/token_type'
+require 'stoffle/token'
+require 'stoffle/lexer'
