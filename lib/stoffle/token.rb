@@ -3,7 +3,6 @@ require 'forwardable'
 module Stoffle
   class Token
     extend Forwardable
-    include Stoffle::TokenType
 
     attr_reader :type, :lexeme, :literal, :location
     def_delegators :@location, :line, :col, :length
