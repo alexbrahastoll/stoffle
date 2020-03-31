@@ -29,24 +29,34 @@ module Stoffle
 
     def tokenize
       self.lexeme_start_p = next_p
+      token = nil
+
       c = consume
 
       return if WHITESPACE.include?(c)
       return ignore_comment_line if c == '#'
-
-      if ONE_CHAR_LEX.include?(c)
-        tokens << token_from_one_char_lex(c)
-      elsif ONE_OR_TWO_CHAR_LEX.include?(c)
-        tokens << token_from_one_or_two_char_lex(c)
-      elsif c == "\n"
+      if c == "\n"
         self.line += 1
         tokens << token_from_one_char_lex(c) if tokens.last&.type != :"\n"
-      elsif c == '"'
-        tokens << string
-      elsif digit?(c)
-        tokens << number
-      elsif alpha_numeric?(c)
-        tokens << identifier
+
+        return
+      end
+
+      token =
+        if ONE_CHAR_LEX.include?(c)
+          token_from_one_char_lex(c)
+        elsif ONE_OR_TWO_CHAR_LEX.include?(c)
+          token_from_one_or_two_char_lex(c)
+        elsif c == '"'
+          string
+        elsif digit?(c)
+          number
+        elsif alpha_numeric?(c)
+          identifier
+        end
+
+      if token
+        tokens << token
       else
         raise('Unknown character.')
       end
