@@ -56,6 +56,8 @@ module Stoffle
       case t.type
       when :'='
         parse_var_binding(identifier)
+      when :"\n"
+        identifier
       else
         nil
       end

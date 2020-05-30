@@ -23,6 +23,20 @@ RSpec.describe Stoffle::Parser do
       it 'does result in syntax errors when the syntax is not respected' do
       end
     end
+
+    context 'standalone identifier' do
+      it 'does generate the expected AST when the syntax is followed' do
+        ident = sfe_ident.new('my_var')
+        var_binding = sfe_var_binding.new(ident, sfe_expr.new)
+        expected_prog = sfe_prog.new
+        expected_prog.expressions.append(var_binding, ident)
+        parser = Stoffle::Parser.new(tokens_from_source('standalone_identifier_ok.sfe'))
+
+        parser.parse
+
+        expect(parser.ast).to eq(expected_prog)
+      end
+    end
   end
 
   def tokens_from_source(filename)
