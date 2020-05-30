@@ -17,6 +17,8 @@ module Stoffle
           case t.type
           when :identifier
             parse_identifier
+          when :return
+            parse_return
           else
             nil
           end
@@ -67,6 +69,10 @@ module Stoffle
         syntax_error(t)
         nil
       end
+    end
+
+    def parse_return
+      AST::Return.new(parse_expression)
     end
 
     def parse_var_binding(identifier)
