@@ -1,11 +1,12 @@
 module Stoffle
   class Parser
-    attr_accessor :tokens, :ast
+    attr_accessor :tokens, :ast, :errors
 
     def initialize(tokens)
       @tokens = tokens
       @ast = AST::Program.new
       @next_p = 0
+      @errors = []
     end
 
     def parse
@@ -49,6 +50,10 @@ module Stoffle
       tokens[lookahead_p]
     end
 
+    def syntax_error(unexpected_token)
+      errors << Error::SyntaxError.new(unexpected_token)
+    end
+
     def parse_identifier
       identifier = AST::Identifier.new(current.lexeme)
 
@@ -59,6 +64,7 @@ module Stoffle
       when :"\n"
         identifier
       else
+        syntax_error(t)
         nil
       end
     end

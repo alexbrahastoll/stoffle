@@ -20,7 +20,13 @@ RSpec.describe Stoffle::Parser do
         expect(parser.ast).to eq(expected_prog)
       end
 
-      it 'does result in syntax errors when the syntax is not respected' do
+      it 'does result in a syntax error when the syntax is not respected' do
+        parser = Stoffle::Parser.new(tokens_from_source('var_binding_err.sfe'))
+
+        parser.parse
+
+        expect(parser.errors.length).to eq(1)
+        expect(parser.errors.last.unexpected_token.lexeme).to eq('1')
       end
     end
 
