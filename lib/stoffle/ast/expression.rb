@@ -3,8 +3,8 @@ module Stoffle
     class Expression
       attr_accessor :value
 
-      def initialize
-        @value = nil
+      def initialize(val = nil)
+        @value = val
       end
 
       # TODO Both implementations below are temporary. Expression SHOULD NOT have a concrete implementation of these methods.
