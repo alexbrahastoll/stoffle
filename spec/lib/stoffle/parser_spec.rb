@@ -8,6 +8,7 @@ RSpec.describe Stoffle::Parser do
   sfe_num = Stoffle::AST::Number
   sfe_return = Stoffle::AST::Return
   sfe_unary_op = Stoffle::AST::UnaryOperator
+  sfe_binary_op = Stoffle::AST::BinaryOperator
 
   describe '#parse' do
     context 'variable binding' do
@@ -71,6 +72,64 @@ RSpec.describe Stoffle::Parser do
 
         parser.parse
 
+        expect(parser.ast).to eq(expected_prog)
+      end
+    end
+
+    context 'binary operators' do
+      it 'does generate the expected AST for 2 + 2' do
+        expected_prog = sfe_prog.new
+        plus_op = sfe_binary_op.new(:'+', sfe_num.new(2.0), sfe_num.new(2.0))
+        expected_prog.expressions.append(plus_op)
+        parser = Stoffle::Parser.new(tokens_from_source('binary_operator_ok_1.sfe'))
+
+        parser.parse
+
+        expect(parser.ast).to eq(expected_prog)
+      end
+
+      it 'does generate the expected AST for 2 + 2 * 3' do
+        expected_prog = sfe_prog.new
+        multiplication_op = sfe_binary_op.new(:'*', sfe_num.new(2.0), sfe_num.new(3.0))
+        plus_op = sfe_binary_op.new(:'+', sfe_num.new(2.0), multiplication_op)
+        expected_prog.expressions.append(plus_op)
+        parser = Stoffle::Parser.new(tokens_from_source('binary_operator_ok_2.sfe'))
+
+        parser.parse
+
+        # expected: 2 + (2 * 3)
+        expect(parser.ast).to eq(expected_prog)
+      end
+
+      it 'does generate the expected AST for 2 + 2 * 3 / 3' do
+        expected_prog = sfe_prog.new
+        multiplication_op = sfe_binary_op.new(:'*', sfe_num.new(2.0), sfe_num.new(3.0))
+        division_op = sfe_binary_op.new(:'/', multiplication_op, sfe_num.new(3.0))
+        plus_op = sfe_binary_op.new(:'+', sfe_num.new(2.0), division_op)
+        expected_prog.expressions.append(plus_op)
+        parser = Stoffle::Parser.new(tokens_from_source('binary_operator_ok_3.sfe'))
+
+        parser.parse
+
+        # expected: 2 + ((2 * 3) / 3)
+        expect(parser.ast).to eq(expected_prog)
+      end
+    end
+
+    context 'mixed operators' do
+      it 'does generate the expected AST for -10 + 2 + 2 * 3 / 3' do
+        expected_prog = sfe_prog.new
+        inversion_op = sfe_unary_op.new(:'-', sfe_num.new(10.0))
+        plus_op_1 = sfe_binary_op.new(:'+', inversion_op, sfe_num.new(2.0))
+        multiplication_op = sfe_binary_op.new(:'*', sfe_num.new(2.0), sfe_num.new(3.0))
+        division_op = sfe_binary_op.new(:'/', multiplication_op, sfe_num.new(3.0))
+        plus_op_2 = sfe_binary_op.new(:'+', plus_op_1, division_op)
+        expected_prog.expressions.append(plus_op_2)
+        parser = Stoffle::Parser.new(tokens_from_source('mixed_operator_ok_1.sfe'))
+
+        parser.parse
+
+        # expected: (-10 + 2) + ((2 * 3) / 3)
         expect(parser.ast).to eq(expected_prog)
       end
     end

@@ -3,18 +3,21 @@ module Stoffle
     attr_accessor :tokens, :ast, :errors
 
     UNARY_OPERATORS = [:'!', :'-'].freeze
+    BINARY_OPERATORS = [:'+', :'-', :'*', :'/', :'==', :'!=', :'>', :'<', :'>=', :'<='].freeze
 
     LOWEST_PRECEDENCE = 0
     PREFIX_PRECEDENCE = 5
     OPERATOR_PRECEDENCE = {
       '==': 1,
       '!=': 1,
-      '<':  2,
       '>':  2,
+      '<':  2,
+      '>=': 2,
+      '<=': 2,
       '+':  3,
       '-':  3,
-      '/':  4,
       '*':  4,
+      '/':  4,
       '(':  6
     }.freeze
 
@@ -46,6 +49,10 @@ module Stoffle
       next_p < tokens.length
     end
 
+    def nxt_not_terminator?
+      nxt.type != :"\n" && nxt.type != :eof
+    end
+
     def consume(offset = 1)
       t = lookahead(offset)
       self.next_p += offset
@@ -69,6 +76,14 @@ module Stoffle
       return nil if lookahead_p < 0 || lookahead_p >= tokens.length
 
       tokens[lookahead_p]
+    end
+
+    def current_precedence
+      OPERATOR_PRECEDENCE[current.type] || LOWEST_PRECEDENCE
+    end
+
+    def nxt_precedence
+      OPERATOR_PRECEDENCE[nxt.type] || LOWEST_PRECEDENCE
     end
 
     def unrecognized_token_error
@@ -101,7 +116,10 @@ module Stoffle
       end
     end
 
-    def determine_infix_function
+    def determine_infix_function(token = current)
+      if BINARY_OPERATORS.include?(token.type)
+        :parse_binary_operator
+      end
     end
 
     def parse_identifier
@@ -143,8 +161,14 @@ module Stoffle
       op
     end
 
-    def parse_expression
-      AST::Expression.new
+    def parse_binary_operator(left)
+      op = AST::BinaryOperator.new(current.type, left)
+      op_precedence = current_precedence
+
+      consume
+      op.right = parse_expr_recursively(op_precedence)
+
+      op
     end
 
     def parse_expr_recursively(precedence = LOWEST_PRECEDENCE)
@@ -153,8 +177,20 @@ module Stoffle
         unrecognized_token_error
         return
       end
-
       expr = send(parsing_function)
+      return if expr.nil? # When expr is nil, it means we have reached a \n or a eof.
+
+      # Note that here we are checking the NEXT token.
+      while nxt_not_terminator? && precedence < nxt_precedence
+        infix_parsing_function = determine_infix_function(nxt)
+
+        return expr if infix_parsing_function.nil?
+
+        consume
+        expr = send(infix_parsing_function, expr)
+      end
+
+      expr
     end
   end
 end
