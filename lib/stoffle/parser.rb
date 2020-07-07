@@ -105,6 +105,8 @@ module Stoffle
         :parse_identifier
       elsif current.type == :number
         :parse_number
+      elsif current.type == :true || current.type == :false
+        :parse_boolean
       elsif current.type == :"\n" || current.type == :eof
         :parse_terminator
       end
@@ -130,6 +132,10 @@ module Stoffle
 
     def parse_number
       AST::Number.new(current.literal)
+    end
+
+    def parse_boolean
+      AST::Boolean.new(current.lexeme == 'true')
     end
 
     # TODO Temporary impl; reflect more deeply about the appropriate way of parsing a terminator.

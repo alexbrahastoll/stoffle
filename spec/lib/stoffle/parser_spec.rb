@@ -6,6 +6,7 @@ RSpec.describe Stoffle::Parser do
   sfe_var_binding = Stoffle::AST::VarBinding
   sfe_ident = Stoffle::AST::Identifier
   sfe_num = Stoffle::AST::Number
+  sfe_bool = Stoffle::AST::Boolean
   sfe_return = Stoffle::AST::Return
   sfe_unary_op = Stoffle::AST::UnaryOperator
   sfe_binary_op = Stoffle::AST::BinaryOperator
@@ -54,6 +55,107 @@ RSpec.describe Stoffle::Parser do
         expected_prog = sfe_prog.new
         expected_prog.expressions.append(sfe_num.new(1991.0), sfe_num.new(7.0), sfe_num.new(28.28))
         parser = Stoffle::Parser.new(tokens_from_source('standalone_number_ok.sfe'))
+
+        parser.parse
+
+        expect(parser.ast).to eq(expected_prog)
+      end
+    end
+
+    context 'standalone boolean' do
+      it 'does generate the expected AST' do
+        expected_prog = sfe_prog.new
+        expected_prog.expressions.append(sfe_bool.new(true), sfe_bool.new(false))
+        parser = Stoffle::Parser.new(tokens_from_source('standalone_boolean_ok.sfe'))
+
+        parser.parse
+
+        expect(parser.ast).to eq(expected_prog)
+      end
+    end
+
+    context 'boolean expressions' do
+      it 'does generate the expected AST for 1 == 1' do
+        expected_prog = sfe_prog.new
+        comparison_op = sfe_binary_op.new(:'==', sfe_num.new(1.0), sfe_num.new(1.0))
+
+        expected_prog.expressions.append(comparison_op)
+        parser = Stoffle::Parser.new(tokens_from_source('boolean_expr_ok_7.sfe'))
+
+        parser.parse
+
+        expect(parser.ast).to eq(expected_prog)
+      end
+
+      it 'does generate the expected AST for 2 != 1' do
+        expected_prog = sfe_prog.new
+        comparison_op = sfe_binary_op.new(:'!=', sfe_num.new(2.0), sfe_num.new(1.0))
+
+        expected_prog.expressions.append(comparison_op)
+        parser = Stoffle::Parser.new(tokens_from_source('boolean_expr_ok_6.sfe'))
+
+        parser.parse
+
+        expect(parser.ast).to eq(expected_prog)
+      end
+
+      it 'does generate the expected AST for 2 + 2 > 3' do
+        expected_prog = sfe_prog.new
+        plus_op = sfe_binary_op.new(:'+', sfe_num.new(2.0), sfe_num.new(2.0))
+        comparison_op = sfe_binary_op.new(:'>', plus_op, sfe_num.new(3.0))
+
+        expected_prog.expressions.append(comparison_op)
+        parser = Stoffle::Parser.new(tokens_from_source('boolean_expr_ok_5.sfe'))
+
+        parser.parse
+
+        expect(parser.ast).to eq(expected_prog)
+      end
+
+      it 'does generate the expected AST for 2 + 2 >= 3' do
+        expected_prog = sfe_prog.new
+        plus_op = sfe_binary_op.new(:'+', sfe_num.new(2.0), sfe_num.new(2.0))
+        comparison_op = sfe_binary_op.new(:'>=', plus_op, sfe_num.new(3.0))
+
+        expected_prog.expressions.append(comparison_op)
+        parser = Stoffle::Parser.new(tokens_from_source('boolean_expr_ok_4.sfe'))
+
+        parser.parse
+
+        expect(parser.ast).to eq(expected_prog)
+      end
+
+      it 'does generate the expected AST for 3 < 2 + 2' do
+        expected_prog = sfe_prog.new
+        plus_op = sfe_binary_op.new(:'+', sfe_num.new(2.0), sfe_num.new(2.0))
+        comparison_op = sfe_binary_op.new(:'<', sfe_num.new(3.0), plus_op)
+
+        expected_prog.expressions.append(comparison_op)
+        parser = Stoffle::Parser.new(tokens_from_source('boolean_expr_ok_3.sfe'))
+
+        parser.parse
+
+        expect(parser.ast).to eq(expected_prog)
+      end
+
+      it 'does generate the expected AST for 3 <= 2 + 2' do
+        expected_prog = sfe_prog.new
+        plus_op = sfe_binary_op.new(:'+', sfe_num.new(2.0), sfe_num.new(2.0))
+        comparison_op = sfe_binary_op.new(:'<=', sfe_num.new(3.0), plus_op)
+
+        expected_prog.expressions.append(comparison_op)
+        parser = Stoffle::Parser.new(tokens_from_source('boolean_expr_ok_2.sfe'))
+
+        parser.parse
+
+        expect(parser.ast).to eq(expected_prog)
+      end
+
+      it 'does generate the expected AST for true != false' do
+        expected_prog = sfe_prog.new
+        not_eq_op = sfe_binary_op.new(:'!=', sfe_bool.new(true), sfe_bool.new(false))
+        expected_prog.expressions.append(not_eq_op)
+        parser = Stoffle::Parser.new(tokens_from_source('boolean_expr_ok_1.sfe'))
 
         parser.parse
 
