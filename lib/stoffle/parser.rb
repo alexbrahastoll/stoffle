@@ -59,6 +59,16 @@ module Stoffle
       t
     end
 
+    def consume_if_nxt_is(expected)
+      if nxt.type == expected.type
+        consume
+        true
+      else
+        unexpected_token_error(expected)
+        false
+      end
+    end
+
     def previous
       lookahead(-1)
     end
@@ -90,8 +100,8 @@ module Stoffle
       errors << Error::Syntax::UnrecognizedToken.new(current)
     end
 
-    def unexpected_token_error
-      errors << Error::Syntax::UnexpectedToken.new(current, nxt)
+    def unexpected_token_error(expected = nil)
+      errors << Error::Syntax::UnexpectedToken.new(current, nxt, expected)
     end
 
     def check_syntax_compliance(ast_node)
@@ -107,6 +117,8 @@ module Stoffle
         :parse_number
       elsif current.type == :true || current.type == :false
         :parse_boolean
+      elsif current.type == :'('
+        :parse_grouped_expr
       elsif current.type == :"\n" || current.type == :eof
         :parse_terminator
       end
@@ -136,6 +148,15 @@ module Stoffle
 
     def parse_boolean
       AST::Boolean.new(current.lexeme == 'true')
+    end
+
+    def parse_grouped_expr
+      consume
+
+      expr = parse_expr_recursively(LOWEST_PRECEDENCE)
+      return unless consume_if_nxt_is(Token.new(:')', ')', nil, nil))
+
+      expr
     end
 
     # TODO Temporary impl; reflect more deeply about the appropriate way of parsing a terminator.

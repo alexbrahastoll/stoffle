@@ -236,6 +236,33 @@ RSpec.describe Stoffle::Parser do
       end
     end
 
+    context 'grouped expressions' do
+      it 'does generate the expected AST for (3 + 4) * 2' do
+        expected_prog = sfe_prog.new
+        plus_op = sfe_binary_op.new(:'+', sfe_num.new(3.0), sfe_num.new(4.0))
+        multiplication_op = sfe_binary_op.new(:'*', plus_op, sfe_num.new(2.0))
+        expected_prog.expressions.append(multiplication_op)
+        parser = Stoffle::Parser.new(tokens_from_source('grouped_expr_ok_1.sfe'))
+
+        parser.parse
+
+        expect(parser.ast).to eq(expected_prog)
+      end
+
+      it 'does generate the expected AST for ((4 + 4) / 4) * 2' do
+        expected_prog = sfe_prog.new
+        plus_op = sfe_binary_op.new(:'+', sfe_num.new(4.0), sfe_num.new(4.0))
+        division_op = sfe_binary_op.new(:'/', plus_op, sfe_num.new(4.0))
+        multiplication_op = sfe_binary_op.new(:'*', division_op, sfe_num.new(2.0))
+        expected_prog.expressions.append(multiplication_op)
+        parser = Stoffle::Parser.new(tokens_from_source('grouped_expr_ok_2.sfe'))
+
+        parser.parse
+
+        expect(parser.ast).to eq(expected_prog)
+      end
+    end
+
     context 'return' do
       it 'does generate the expected AST' do
         ret = sfe_return.new(sfe_num.new(1.0))
