@@ -10,6 +10,8 @@ RSpec.describe Stoffle::Parser do
   sfe_return = Stoffle::AST::Return
   sfe_unary_op = Stoffle::AST::UnaryOperator
   sfe_binary_op = Stoffle::AST::BinaryOperator
+  sfe_conditional = Stoffle::AST::Conditional
+  sfe_block = Stoffle::AST::Block
 
   describe '#parse' do
     context 'variable binding' do
@@ -269,6 +271,83 @@ RSpec.describe Stoffle::Parser do
         expected_prog = sfe_prog.new
         expected_prog.expressions.append(ret)
         parser = Stoffle::Parser.new(tokens_from_source('return_ok.sfe'))
+
+        parser.parse
+
+        expect(parser.ast).to eq(expected_prog)
+      end
+    end
+
+    context 'conditionals' do
+      it 'does generate the expected AST for a IF THEN conditional' do
+        expected_prog = sfe_prog.new
+        ident = sfe_ident.new('world_still_makes_sense')
+        var_binding_outer = sfe_var_binding.new(ident, sfe_bool.new(false))
+        eq_op = sfe_binary_op.new(:'==', sfe_num.new(1.0), sfe_num.new(1.0))
+        var_binding_inner = sfe_var_binding.new(ident, sfe_bool.new(true))
+        true_block = sfe_block.new
+        true_block.expressions.append(var_binding_inner)
+        conditional = sfe_conditional.new(eq_op, true_block)
+        expected_prog.expressions.append(var_binding_outer, conditional)
+        parser = Stoffle::Parser.new(tokens_from_source('conditional_ok_1.sfe'))
+
+        parser.parse
+
+        expect(parser.ast).to eq(expected_prog)
+      end
+
+      it 'does generate the expected AST for a IF THEN ELSE conditional' do
+        expected_prog = sfe_prog.new
+
+        ident_1 = sfe_ident.new('world_still_makes_sense')
+        ident_2 = sfe_ident.new('world_gone_mad')
+        var_binding_1 = sfe_var_binding.new(ident_1, sfe_bool.new(false))
+        var_binding_2 = sfe_var_binding.new(ident_2, sfe_bool.new(false))
+
+        eq_op = sfe_binary_op.new(:'==', sfe_num.new(1.0), sfe_num.new(1.0))
+        var_binding_3 = sfe_var_binding.new(ident_1, sfe_bool.new(true))
+        true_block = sfe_block.new
+        true_block.expressions.append(var_binding_3)
+
+        ineq_op = sfe_binary_op.new(:'!=', sfe_num.new(1.0), sfe_num.new(1.0))
+        var_binding_4 = sfe_var_binding.new(ident_2, sfe_bool.new(true))
+        false_block = sfe_block.new
+        false_block.expressions.append(ineq_op, var_binding_4)
+
+        conditional = sfe_conditional.new(eq_op, true_block, false_block)
+
+        expected_prog.expressions.append(var_binding_1, var_binding_2, conditional)
+        parser = Stoffle::Parser.new(tokens_from_source('conditional_ok_2.sfe'))
+
+        parser.parse
+
+        expect(parser.ast).to eq(expected_prog)
+      end
+
+      it 'does generate the expected AST for a IF THEN ELSE IF conditional' do
+        expected_prog = sfe_prog.new
+
+        ident_1 = sfe_ident.new('world_still_makes_sense')
+        ident_2 = sfe_ident.new('world_gone_mad')
+        var_binding_1 = sfe_var_binding.new(ident_1, sfe_bool.new(false))
+        var_binding_2 = sfe_var_binding.new(ident_2, sfe_bool.new(false))
+
+        eq_op = sfe_binary_op.new(:'==', sfe_num.new(1.0), sfe_num.new(1.0))
+        var_binding_3 = sfe_var_binding.new(ident_1, sfe_bool.new(true))
+        true_block = sfe_block.new
+        true_block.expressions.append(var_binding_3)
+
+        var_binding_4 = sfe_var_binding.new(ident_2, sfe_bool.new(true))
+        true_block_inner = sfe_block.new
+        true_block_inner.expressions.append(var_binding_4)
+        conditional_inner = sfe_conditional.new(sfe_bool.new(true), true_block_inner)
+        false_block = sfe_block.new
+        false_block.expressions.append(conditional_inner)
+
+        conditional_outer = sfe_conditional.new(eq_op, true_block, false_block)
+
+        expected_prog.expressions.append(var_binding_1, var_binding_2, conditional_outer)
+        parser = Stoffle::Parser.new(tokens_from_source('conditional_ok_3.sfe'))
 
         parser.parse
 

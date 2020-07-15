@@ -32,11 +32,7 @@ module Stoffle
       while pending_tokens?
         consume
 
-        node =
-          parse_var_binding ||
-          parse_return ||
-          parse_expr_recursively
-
+        node = parse_expr
         ast << node if node != nil
       end
     end
@@ -44,6 +40,12 @@ module Stoffle
     private
 
     attr_accessor :next_p
+
+    def parse_expr
+      parse_var_binding ||
+      parse_return ||
+      parse_expr_recursively
+    end
 
     def pending_tokens?
       next_p < tokens.length
@@ -117,6 +119,8 @@ module Stoffle
         :parse_number
       elsif current.type == :true || current.type == :false
         :parse_boolean
+      elsif current.type == :if
+        :parse_conditional
       elsif current.type == :'('
         :parse_grouped_expr
       elsif current.type == :"\n" || current.type == :eof
@@ -150,10 +154,39 @@ module Stoffle
       AST::Boolean.new(current.lexeme == 'true')
     end
 
+    def parse_conditional
+      conditional = AST::Conditional.new
+      consume
+      conditional.condition = parse_expr_recursively
+      return unless consume_if_nxt_is(Token.new(:"\n", "\n", nil, nil))
+
+      conditional.when_true = parse_block
+
+      if consume_if_nxt_is(Token.new(:else, 'else', nil, nil))
+        return unless consume_if_nxt_is(Token.new(:"\n", "\n", nil, nil))
+        conditional.when_false = parse_block
+      end
+
+      conditional
+    end
+
+    def parse_block
+      consume
+      block = AST::Block.new
+      while current.type != :end && nxt.type != :else && current.type != :eof
+
+        expr = parse_expr
+        block << expr unless expr.nil?
+        consume
+      end
+
+      block
+    end
+
     def parse_grouped_expr
       consume
 
-      expr = parse_expr_recursively(LOWEST_PRECEDENCE)
+      expr = parse_expr_recursively
       return unless consume_if_nxt_is(Token.new(:')', ')', nil, nil))
 
       expr

@@ -1,0 +1,4 @@
+world_still_makes_sense = false
+if 1 == 1
+  world_still_makes_sense = true
+end
