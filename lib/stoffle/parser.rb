@@ -119,6 +119,8 @@ module Stoffle
         :parse_number
       elsif current.type == :true || current.type == :false
         :parse_boolean
+      elsif current.type == :fn
+        :parse_function_definition
       elsif current.type == :if
         :parse_conditional
       elsif current.type == :'('
@@ -154,6 +156,40 @@ module Stoffle
       AST::Boolean.new(current.lexeme == 'true')
     end
 
+    def parse_function_definition
+      return unless consume_if_nxt_is(Token.new(:identifier, nil, nil, nil))
+      fn = AST::FunctionDefinition.new(AST::Identifier.new(current.lexeme))
+
+      if nxt.type != :"\n" && nxt.type != :':'
+        unexpected_token_error
+        return
+      end
+
+      fn.params = parse_function_params if nxt.type == :':'
+
+      return unless consume_if_nxt_is(Token.new(:"\n", "\n", nil, nil))
+      body = parse_block
+      fn.body = body
+
+      fn
+    end
+
+    def parse_function_params
+      consume
+      return unless consume_if_nxt_is(Token.new(:identifier, nil, nil, nil))
+
+      identifiers = []
+      identifiers << AST::Identifier.new(current.lexeme)
+
+      while nxt.type == :','
+        consume
+        return unless consume_if_nxt_is(Token.new(:identifier, nil, nil, nil))
+        identifiers << AST::Identifier.new(current.lexeme)
+      end
+
+      identifiers
+    end
+
     def parse_conditional
       conditional = AST::Conditional.new
       consume
@@ -162,6 +198,7 @@ module Stoffle
 
       conditional.when_true = parse_block
 
+      # TODO: Probably is best to use nxt and check directly; ELSE is optional and should not result in errors being added to the parsing. Besides that: think of some sanity checks (e.g., no parser errors) that maybe should be done in EVERY parser test.
       if consume_if_nxt_is(Token.new(:else, 'else', nil, nil))
         return unless consume_if_nxt_is(Token.new(:"\n", "\n", nil, nil))
         conditional.when_false = parse_block
@@ -174,7 +211,6 @@ module Stoffle
       consume
       block = AST::Block.new
       while current.type != :end && nxt.type != :else && current.type != :eof
-
         expr = parse_expr
         block << expr unless expr.nil?
         consume

@@ -12,6 +12,7 @@ RSpec.describe Stoffle::Parser do
   sfe_binary_op = Stoffle::AST::BinaryOperator
   sfe_conditional = Stoffle::AST::Conditional
   sfe_block = Stoffle::AST::Block
+  sfe_fn_def = Stoffle::AST::FunctionDefinition
 
   describe '#parse' do
     context 'variable binding' do
@@ -348,6 +349,63 @@ RSpec.describe Stoffle::Parser do
 
         expected_prog.expressions.append(var_binding_1, var_binding_2, conditional_outer)
         parser = Stoffle::Parser.new(tokens_from_source('conditional_ok_3.sfe'))
+
+        parser.parse
+
+        expect(parser.ast).to eq(expected_prog)
+      end
+    end
+
+    context 'function definition' do
+      it 'does generate the expected AST for a function without parameters' do
+        expected_prog = sfe_prog.new
+
+        block_1 = sfe_block.new
+        block_1 << sfe_num.new(1.0)
+        ident_1 = sfe_ident.new('one')
+        fn_def_1 = sfe_fn_def.new(ident_1, nil, block_1)
+
+        block_2 = sfe_block.new
+        block_2 << sfe_num.new(2.0)
+        ident_2 = sfe_ident.new('two')
+        fn_def_2 = sfe_fn_def.new(ident_2, nil, block_2)
+
+        expected_prog.expressions.append(fn_def_1, fn_def_2)
+        parser = Stoffle::Parser.new(tokens_from_source('fn_def_ok_1.sfe'))
+
+        parser.parse
+
+        expect(parser.ast).to eq(expected_prog)
+      end
+
+      it 'does generate the expected AST for a function with one parameter' do
+        expected_prog = sfe_prog.new
+        fn_name = sfe_ident.new('double')
+        param = sfe_ident.new('num')
+        block = sfe_block.new
+        block << sfe_binary_op.new(:'*', param, sfe_num.new(2.0))
+        fn_def = sfe_fn_def.new(fn_name, [param], block)
+        expected_prog.expressions.append(fn_def)
+        parser = Stoffle::Parser.new(tokens_from_source('fn_def_ok_2.sfe'))
+
+        parser.parse
+
+        expect(parser.ast).to eq(expected_prog)
+      end
+
+      it 'does generate the expected AST for a function with multiple parameters' do
+        expected_prog = sfe_prog.new
+        fn_name = sfe_ident.new('sum_3')
+        param_1 = sfe_ident.new('num_1')
+        param_2 = sfe_ident.new('num_2')
+        param_3 = sfe_ident.new('num_3')
+        plus_op_left = sfe_binary_op.new(:'+', param_1, param_2)
+        plus_op_right = sfe_binary_op.new(:'+', plus_op_left, param_3)
+        block = sfe_block.new
+        block << plus_op_right
+        fn_def = sfe_fn_def.new(fn_name, [param_1, param_2, param_3], block)
+        expected_prog.expressions.append(fn_def)
+        parser = Stoffle::Parser.new(tokens_from_source('fn_def_ok_3.sfe'))
 
         parser.parse
 

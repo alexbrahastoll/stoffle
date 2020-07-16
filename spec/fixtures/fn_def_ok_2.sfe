@@ -1,0 +1,3 @@
+fn double: num
+  num * 2
+end
