@@ -127,6 +127,8 @@ module Stoffle
         :parse_function_definition
       elsif current.type == :if
         :parse_conditional
+      elsif current.type == :while
+        :parse_repetition
       elsif current.type == :'('
         :parse_grouped_expr
       elsif current.type == :"\n" || current.type == :eof
@@ -244,6 +246,16 @@ module Stoffle
       end
 
       conditional
+    end
+
+    def parse_repetition
+      repetition = AST::Repetition.new
+      consume
+      repetition.condition = parse_expr_recursively
+      return unless consume_if_nxt_is(Token.new(:"\n", "\n", nil, nil))
+
+      repetition.block = parse_block
+      repetition
     end
 
     def parse_block

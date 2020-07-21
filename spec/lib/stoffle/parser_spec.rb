@@ -13,6 +13,7 @@ RSpec.describe Stoffle::Parser do
   sfe_unary_op = Stoffle::AST::UnaryOperator
   sfe_binary_op = Stoffle::AST::BinaryOperator
   sfe_conditional = Stoffle::AST::Conditional
+  sfe_repetition = Stoffle::AST::Repetition
   sfe_block = Stoffle::AST::Block
   sfe_fn_def = Stoffle::AST::FunctionDefinition
   sfe_fn_call = Stoffle::AST::FunctionCall
@@ -377,6 +378,26 @@ RSpec.describe Stoffle::Parser do
 
         expected_prog.expressions.append(var_binding_1, var_binding_2, conditional_outer)
         parser = Stoffle::Parser.new(tokens_from_source('conditional_ok_3.sfe'))
+
+        parser.parse
+
+        expect(parser.ast).to eq(expected_prog)
+      end
+    end
+
+    context 'repetitions' do
+      it 'does generate the expected AST for a WHILE loop' do
+        expected_prog = sfe_prog.new
+        ident = sfe_ident.new('i')
+        var_binding_outer = sfe_var_binding.new(ident, sfe_num.new(0.0))
+        lt_op = sfe_binary_op.new(:'<', ident, sfe_num.new(10.0))
+        fn_call = sfe_fn_call.new(sfe_ident.new('do_something'), [])
+        var_binding_inner = sfe_var_binding.new(ident, sfe_binary_op.new(:'+', ident, sfe_num.new(1.0)))
+        repetition_block = sfe_block.new
+        repetition_block.expressions.append(fn_call, var_binding_inner)
+        repetition = sfe_repetition.new(lt_op, repetition_block)
+        expected_prog.expressions.append(var_binding_outer, repetition)
+        parser = Stoffle::Parser.new(tokens_from_source('repetition_ok_1.sfe'))
 
         parser.parse
 

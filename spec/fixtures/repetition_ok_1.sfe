@@ -1,0 +1,5 @@
+i = 0
+while i < 10
+  do_something()
+  i = i + 1
+end
