@@ -13,6 +13,7 @@ RSpec.describe Stoffle::Parser do
   sfe_conditional = Stoffle::AST::Conditional
   sfe_block = Stoffle::AST::Block
   sfe_fn_def = Stoffle::AST::FunctionDefinition
+  sfe_fn_call = Stoffle::AST::FunctionCall
 
   describe '#parse' do
     context 'variable binding' do
@@ -406,6 +407,46 @@ RSpec.describe Stoffle::Parser do
         fn_def = sfe_fn_def.new(fn_name, [param_1, param_2, param_3], block)
         expected_prog.expressions.append(fn_def)
         parser = Stoffle::Parser.new(tokens_from_source('fn_def_ok_3.sfe'))
+
+        parser.parse
+
+        expect(parser.ast).to eq(expected_prog)
+      end
+    end
+
+    context 'function call' do
+      it 'does generate the expected AST for a call with no arguments' do
+        expected_prog = sfe_prog.new
+        ident = sfe_ident.new('my_func')
+        fn_call = sfe_fn_call.new(ident, [])
+        expected_prog.expressions.append(fn_call)
+        parser = Stoffle::Parser.new(tokens_from_source('fn_call_ok_1.sfe'))
+
+        parser.parse
+
+        expect(parser.ast).to eq(expected_prog)
+      end
+
+      it 'does generate the expected AST for a call with one argument' do
+        expected_prog = sfe_prog.new
+        ident = sfe_ident.new('my_func')
+        args = [sfe_num.new(1.0)]
+        fn_call = sfe_fn_call.new(ident, args)
+        expected_prog.expressions.append(fn_call)
+        parser = Stoffle::Parser.new(tokens_from_source('fn_call_ok_2.sfe'))
+
+        parser.parse
+
+        expect(parser.ast).to eq(expected_prog)
+      end
+
+      it 'does generate the expected AST for a call with multiple arguments' do
+        expected_prog = sfe_prog.new
+        ident = sfe_ident.new('my_func')
+        args = [sfe_num.new(1.0), sfe_ident.new('my_arg'), sfe_binary_op.new(:'+', sfe_num.new(2.0), sfe_num.new(2.0))]
+        fn_call = sfe_fn_call.new(ident, args)
+        expected_prog.expressions.append(fn_call)
+        parser = Stoffle::Parser.new(tokens_from_source('fn_call_ok_3.sfe'))
 
         parser.parse
 

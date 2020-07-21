@@ -139,6 +139,8 @@ module Stoffle
     def determine_infix_function(token = current)
       if BINARY_OPERATORS.include?(token.type)
         :parse_binary_operator
+      elsif token.type == :'('
+        :parse_function_call
       end
     end
 
@@ -188,6 +190,31 @@ module Stoffle
       end
 
       identifiers
+    end
+
+    def parse_function_call(identifier)
+      AST::FunctionCall.new(identifier, parse_function_call_args)
+    end
+
+    def parse_function_call_args
+      args = []
+
+      # Function call without arguments.
+      if nxt.type == :')'
+        consume
+        return args
+      end
+
+      consume
+      args << parse_expr_recursively
+
+      while nxt.type == :','
+        consume(2)
+        args << parse_expr_recursively
+      end
+
+      return unless consume_if_nxt_is(Token.new(:')', ')', nil, nil))
+      args
     end
 
     def parse_conditional
