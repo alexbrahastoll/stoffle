@@ -268,6 +268,43 @@ RSpec.describe Stoffle::Parser do
       end
     end
 
+    context 'logical operators' do
+      it 'does generate the expected AST for true and false' do
+        expected_prog = sfe_prog.new
+        and_op = sfe_binary_op.new(:and, sfe_bool.new(true), sfe_bool.new(false))
+        expected_prog.expressions.append(and_op)
+        parser = Stoffle::Parser.new(tokens_from_source('logical_operator_ok_1.sfe'))
+
+        parser.parse
+
+        expect(parser.ast).to eq(expected_prog)
+      end
+
+      it 'does generate the expected AST for true or false' do
+        expected_prog = sfe_prog.new
+        or_op = sfe_binary_op.new(:or, sfe_bool.new(true), sfe_bool.new(false))
+        expected_prog.expressions.append(or_op)
+        parser = Stoffle::Parser.new(tokens_from_source('logical_operator_ok_2.sfe'))
+
+        parser.parse
+
+        expect(parser.ast).to eq(expected_prog)
+      end
+
+      it 'does generate the expected AST for true and false or true' do
+        expected_prog = sfe_prog.new
+        and_op = sfe_binary_op.new(:and, sfe_bool.new(true), sfe_bool.new(false))
+        or_op = sfe_binary_op.new(:or, and_op, sfe_bool.new(true))
+        expected_prog.expressions.append(or_op)
+        parser = Stoffle::Parser.new(tokens_from_source('logical_operator_ok_3.sfe'))
+
+        parser.parse
+
+        # expected: (true and false) or true
+        expect(parser.ast).to eq(expected_prog)
+      end
+    end
+
     context 'grouped expressions' do
       it 'does generate the expected AST for (3 + 4) * 2' do
         expected_prog = sfe_prog.new
@@ -288,6 +325,18 @@ RSpec.describe Stoffle::Parser do
         multiplication_op = sfe_binary_op.new(:'*', division_op, sfe_num.new(2.0))
         expected_prog.expressions.append(multiplication_op)
         parser = Stoffle::Parser.new(tokens_from_source('grouped_expr_ok_2.sfe'))
+
+        parser.parse
+
+        expect(parser.ast).to eq(expected_prog)
+      end
+
+      it 'does generate the expected AST for true and (false or true)' do
+        expected_prog = sfe_prog.new
+        or_op = sfe_binary_op.new(:or, sfe_bool.new(false), sfe_bool.new(true))
+        and_op = sfe_binary_op.new(:and, sfe_bool.new(true), or_op)
+        expected_prog.expressions.append(and_op)
+        parser = Stoffle::Parser.new(tokens_from_source('grouped_expr_ok_3.sfe'))
 
         parser.parse
 

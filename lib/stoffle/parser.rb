@@ -4,21 +4,24 @@ module Stoffle
 
     UNARY_OPERATORS = [:'!', :'-'].freeze
     BINARY_OPERATORS = [:'+', :'-', :'*', :'/', :'==', :'!=', :'>', :'<', :'>=', :'<='].freeze
+    LOGICAL_OPERATORS = [:or, :and].freeze
 
     LOWEST_PRECEDENCE = 0
-    PREFIX_PRECEDENCE = 5
+    PREFIX_PRECEDENCE = 7
     OPERATOR_PRECEDENCE = {
-      '==': 1,
-      '!=': 1,
-      '>':  2,
-      '<':  2,
-      '>=': 2,
-      '<=': 2,
-      '+':  3,
-      '-':  3,
-      '*':  4,
-      '/':  4,
-      '(':  6
+      or:   1,
+      and:  2,
+      '==': 3,
+      '!=': 3,
+      '>':  4,
+      '<':  4,
+      '>=': 4,
+      '<=': 4,
+      '+':  5,
+      '-':  5,
+      '*':  6,
+      '/':  6,
+      '(':  8
     }.freeze
 
     def initialize(tokens)
@@ -143,7 +146,7 @@ module Stoffle
     end
 
     def determine_infix_function(token = current)
-      if BINARY_OPERATORS.include?(token.type)
+      if (BINARY_OPERATORS + LOGICAL_OPERATORS).include?(token.type)
         :parse_binary_operator
       elsif token.type == :'('
         :parse_function_call
