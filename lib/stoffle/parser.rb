@@ -117,6 +117,8 @@ module Stoffle
         :parse_identifier
       elsif current.type == :number
         :parse_number
+      elsif current.type == :string
+        :parse_string
       elsif current.type == :true || current.type == :false
         :parse_boolean
       elsif current.type == :fn
@@ -148,6 +150,10 @@ module Stoffle
       ident = AST::Identifier.new(current.lexeme)
       check_syntax_compliance(ident)
       ident
+    end
+
+    def parse_string
+      AST::String.new(current.literal)
     end
 
     def parse_number

@@ -5,6 +5,7 @@ RSpec.describe Stoffle::Parser do
   sfe_expr = Stoffle::AST::Expression
   sfe_var_binding = Stoffle::AST::VarBinding
   sfe_ident = Stoffle::AST::Identifier
+  sfe_str = Stoffle::AST::String
   sfe_num = Stoffle::AST::Number
   sfe_bool = Stoffle::AST::Boolean
   sfe_return = Stoffle::AST::Return
@@ -65,6 +66,19 @@ RSpec.describe Stoffle::Parser do
         expect(parser.ast).to eq(expected_prog)
       end
     end
+
+    context 'standalone string' do
+      it 'does generate the expected AST' do
+        expected_prog = sfe_prog.new
+        expected_prog.expressions.append(sfe_str.new('a string'), sfe_str.new('another string'))
+        parser = Stoffle::Parser.new(tokens_from_source('standalone_string_ok.sfe'))
+
+        parser.parse
+
+        expect(parser.ast).to eq(expected_prog)
+      end
+    end
+
 
     context 'standalone boolean' do
       it 'does generate the expected AST' do
