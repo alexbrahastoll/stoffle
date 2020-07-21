@@ -121,6 +121,8 @@ module Stoffle
         :parse_string
       elsif current.type == :true || current.type == :false
         :parse_boolean
+      elsif current.type == :nil
+        :parse_nil
       elsif current.type == :fn
         :parse_function_definition
       elsif current.type == :if
@@ -162,6 +164,10 @@ module Stoffle
 
     def parse_boolean
       AST::Boolean.new(current.lexeme == 'true')
+    end
+
+    def parse_nil
+      AST::Nil.new
     end
 
     def parse_function_definition

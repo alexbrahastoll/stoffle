@@ -8,6 +8,7 @@ RSpec.describe Stoffle::Parser do
   sfe_str = Stoffle::AST::String
   sfe_num = Stoffle::AST::Number
   sfe_bool = Stoffle::AST::Boolean
+  sfe_nil = Stoffle::AST::Nil
   sfe_return = Stoffle::AST::Return
   sfe_unary_op = Stoffle::AST::UnaryOperator
   sfe_binary_op = Stoffle::AST::BinaryOperator
@@ -174,6 +175,18 @@ RSpec.describe Stoffle::Parser do
         not_eq_op = sfe_binary_op.new(:'!=', sfe_bool.new(true), sfe_bool.new(false))
         expected_prog.expressions.append(not_eq_op)
         parser = Stoffle::Parser.new(tokens_from_source('boolean_expr_ok_1.sfe'))
+
+        parser.parse
+
+        expect(parser.ast).to eq(expected_prog)
+      end
+    end
+
+    context 'standalone nil' do
+      it 'does generate the expected AST' do
+        expected_prog = sfe_prog.new
+        expected_prog.expressions.append(sfe_nil.new)
+        parser = Stoffle::Parser.new(tokens_from_source('standalone_nil_ok.sfe'))
 
         parser.parse
 
