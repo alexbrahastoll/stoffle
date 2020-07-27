@@ -550,6 +550,41 @@ RSpec.describe Stoffle::Parser do
         expect(parser.ast).to eq(expected_prog)
       end
     end
+
+    context 'complex programs' do
+      it 'does produce the expected AST for a program that sums all integers between (inclusive) two numbers' do
+        expected_prog = sfe_prog.new
+        fn_name = sfe_ident.new('sum_integers')
+        fn_param_1 = sfe_ident.new('first_integer')
+        fn_param_2 = sfe_ident.new('last_integer')
+        fn_body = sfe_block.new
+
+        ident_1 = sfe_ident.new('i')
+        var_binding_1 = sfe_var_binding.new(ident_1, fn_param_1)
+        ident_2 = sfe_ident.new('sum')
+        var_binding_2 = sfe_var_binding.new(ident_2, sfe_num.new(0.0))
+
+        repetition_condition = sfe_binary_op.new(:'<=', ident_1, fn_param_2)
+        var_binding_3 = sfe_var_binding.new(ident_2, sfe_binary_op.new(:'+', ident_2, ident_1))
+        var_binding_4 = sfe_var_binding.new(ident_1, sfe_binary_op.new(:'+', ident_1, sfe_num.new(1.0)))
+        repetition_block = sfe_block.new
+        repetition_block.expressions.append(var_binding_3, var_binding_4)
+        repetition = sfe_repetition.new(repetition_condition, repetition_block)
+
+        println = sfe_fn_call.new(sfe_ident.new('println'), [ident_2])
+
+        fn_body.expressions.append(var_binding_1, var_binding_2, repetition, println)
+        fn_def = sfe_fn_def.new(fn_name, [fn_param_1, fn_param_2], fn_body)
+        fn_call = sfe_fn_call.new(fn_name, [sfe_num.new(1.0), sfe_num.new(100.0)])
+
+        expected_prog.expressions.append(fn_def, fn_call)
+        parser = Stoffle::Parser.new(tokens_from_source('complex_program_ok_1.sfe'))
+
+        parser.parse
+
+        expect(parser.ast).to eq(expected_prog)
+      end
+    end
   end
 
   def tokens_from_source(filename)
