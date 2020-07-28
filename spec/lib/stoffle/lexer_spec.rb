@@ -122,7 +122,7 @@ RSpec.describe Stoffle::Lexer do
           :identifier, :'=', :identifier, :'+', :identifier, :"\n",
           :identifier, :'=', :identifier, :'+', :number, :"\n",
           :end, :"\n",
-          :println, :'(', :identifier, :')', :"\n",
+          :identifier, :'(', :identifier, :')', :"\n",
           :end, :"\n",
           :identifier, :'(', :number, :',', :number, :')', :"\n",
           :eof
