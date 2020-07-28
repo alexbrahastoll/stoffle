@@ -35,7 +35,7 @@ module Stoffle
       while pending_tokens?
         consume
 
-        node = parse_expr
+        node = parse_expr_recursively
         ast << node if node != nil
       end
     end
@@ -43,12 +43,6 @@ module Stoffle
     private
 
     attr_accessor :next_p
-
-    def parse_expr
-      parse_var_binding ||
-      parse_return ||
-      parse_expr_recursively
-    end
 
     def pending_tokens?
       next_p < tokens.length
@@ -116,7 +110,9 @@ module Stoffle
 
     def determine_parsing_function
       # TODO Use metaprogramming to eliminate (or at least reduce) the conditionals.
-      if current.type == :identifier
+      if current.type == :return
+        :parse_return
+      elsif current.type == :identifier
         :parse_identifier
       elsif current.type == :number
         :parse_number
@@ -154,9 +150,13 @@ module Stoffle
     end
 
     def parse_identifier
-      ident = AST::Identifier.new(current.lexeme)
-      check_syntax_compliance(ident)
-      ident
+      if lookahead.type == :'='
+        parse_var_binding
+      else
+        ident = AST::Identifier.new(current.lexeme)
+        check_syntax_compliance(ident)
+        ident
+      end
     end
 
     def parse_string
@@ -265,7 +265,7 @@ module Stoffle
       consume
       block = AST::Block.new
       while current.type != :end && nxt.type != :else && current.type != :eof
-        expr = parse_expr
+        expr = parse_expr_recursively
         block << expr unless expr.nil?
         consume
       end
@@ -288,8 +288,6 @@ module Stoffle
     end
 
     def parse_var_binding
-      return unless current.type == :identifier && lookahead.type == :'='
-
       identifier = AST::Identifier.new(current.lexeme)
       consume(2)
 
@@ -297,8 +295,6 @@ module Stoffle
     end
 
     def parse_return
-      return unless current.type == :return
-
       consume
       AST::Return.new(parse_expr_recursively)
     end
