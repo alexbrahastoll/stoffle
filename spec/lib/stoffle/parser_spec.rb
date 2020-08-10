@@ -584,6 +584,22 @@ RSpec.describe Stoffle::Parser do
 
         expect(parser.ast).to eq(expected_prog)
       end
+
+      it 'does produce the expected AST for a program that calculates the double of a number' do
+        expected_prog = sfe_prog.new
+        fn_name = sfe_ident.new('double')
+        fn_param_1 = sfe_ident.new('num')
+        fn_body = sfe_block.new
+        binary_op = sfe_binary_op.new(:'*', fn_param_1, sfe_num.new(2.0))
+        fn_body.expressions.append(binary_op)
+        fn_def = sfe_fn_def.new(fn_name, [fn_param_1], fn_body)
+        expected_prog.expressions.append(fn_def)
+        parser = Stoffle::Parser.new(tokens_from_source('complex_program_ok_2.sfe'))
+
+        parser.parse
+
+        expect(parser.ast).to eq(expected_prog)
+      end
     end
   end
 
