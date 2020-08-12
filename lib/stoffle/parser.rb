@@ -44,6 +44,10 @@ module Stoffle
 
     attr_accessor :next_p
 
+    def build_token(type, lexeme = nil)
+      Token.new(type, lexeme, nil, nil)
+    end
+
     def pending_tokens?
       next_p < tokens.length
     end
@@ -109,34 +113,14 @@ module Stoffle
     end
 
     def determine_parsing_function
-      # TODO Use metaprogramming to eliminate (or at least reduce) the conditionals.
-      if current.type == :return
-        :parse_return
-      elsif current.type == :identifier
-        :parse_identifier
-      elsif current.type == :number
-        :parse_number
-      elsif current.type == :string
-        :parse_string
-      elsif current.type == :true || current.type == :false
-        :parse_boolean
-      elsif current.type == :nil
-        :parse_nil
-      elsif current.type == :fn
-        :parse_function_definition
-      elsif current.type == :if
-        :parse_conditional
-      elsif current.type == :while
-        :parse_repetition
+      if [:return, :identifier, :number, :string, :true, :false, :nil, :fn,
+          :if, :while].include?(current.type)
+        "parse_#{current.type}".to_sym
       elsif current.type == :'('
         :parse_grouped_expr
-      elsif current.type == :"\n" || current.type == :eof
+      elsif [:"\n", :eof].include?(current.type)
         :parse_terminator
-      end
-    end
-
-    def determine_prefix_function
-      if UNARY_OPERATORS.include?(current.type)
+      elsif UNARY_OPERATORS.include?(current.type)
         :parse_unary_operator
       end
     end
@@ -176,7 +160,7 @@ module Stoffle
     end
 
     def parse_function_definition
-      return unless consume_if_nxt_is(Token.new(:identifier, nil, nil, nil))
+      return unless consume_if_nxt_is(build_token(:identifier))
       fn = AST::FunctionDefinition.new(AST::Identifier.new(current.lexeme))
 
       if nxt.type != :"\n" && nxt.type != :':'
@@ -186,23 +170,22 @@ module Stoffle
 
       fn.params = parse_function_params if nxt.type == :':'
 
-      return unless consume_if_nxt_is(Token.new(:"\n", "\n", nil, nil))
-      body = parse_block
-      fn.body = body
+      return unless consume_if_nxt_is(build_token(:"\n", "\n"))
+      fn.body = parse_block
 
       fn
     end
 
     def parse_function_params
       consume
-      return unless consume_if_nxt_is(Token.new(:identifier, nil, nil, nil))
+      return unless consume_if_nxt_is(build_token(:identifier))
 
       identifiers = []
       identifiers << AST::Identifier.new(current.lexeme)
 
       while nxt.type == :','
         consume
-        return unless consume_if_nxt_is(Token.new(:identifier, nil, nil, nil))
+        return unless consume_if_nxt_is(build_token(:identifier))
         identifiers << AST::Identifier.new(current.lexeme)
       end
 
@@ -230,7 +213,7 @@ module Stoffle
         args << parse_expr_recursively
       end
 
-      return unless consume_if_nxt_is(Token.new(:')', ')', nil, nil))
+      return unless consume_if_nxt_is(build_token(:')', ')'))
       args
     end
 
@@ -238,13 +221,13 @@ module Stoffle
       conditional = AST::Conditional.new
       consume
       conditional.condition = parse_expr_recursively
-      return unless consume_if_nxt_is(Token.new(:"\n", "\n", nil, nil))
+      return unless consume_if_nxt_is(build_token(:"\n", "\n"))
 
       conditional.when_true = parse_block
 
       # TODO: Probably is best to use nxt and check directly; ELSE is optional and should not result in errors being added to the parsing. Besides that: think of some sanity checks (e.g., no parser errors) that maybe should be done in EVERY parser test.
-      if consume_if_nxt_is(Token.new(:else, 'else', nil, nil))
-        return unless consume_if_nxt_is(Token.new(:"\n", "\n", nil, nil))
+      if consume_if_nxt_is(build_token(:else, 'else'))
+        return unless consume_if_nxt_is(build_token(:"\n", "\n"))
         conditional.when_false = parse_block
       end
 
@@ -255,7 +238,7 @@ module Stoffle
       repetition = AST::Repetition.new
       consume
       repetition.condition = parse_expr_recursively
-      return unless consume_if_nxt_is(Token.new(:"\n", "\n", nil, nil))
+      return unless consume_if_nxt_is(build_token(:"\n", "\n"))
 
       repetition.block = parse_block
       repetition
@@ -264,11 +247,12 @@ module Stoffle
     def parse_block
       consume
       block = AST::Block.new
-      while current.type != :end && nxt.type != :else && current.type != :eof
+      while current.type != :end && current.type != :eof && nxt.type != :else
         expr = parse_expr_recursively
         block << expr unless expr.nil?
         consume
       end
+      unexpected_token_error(build_token(:eof)) if current.type == :eof
 
       block
     end
@@ -277,7 +261,7 @@ module Stoffle
       consume
 
       expr = parse_expr_recursively
-      return unless consume_if_nxt_is(Token.new(:')', ')', nil, nil))
+      return unless consume_if_nxt_is(build_token(:')', ')'))
 
       expr
     end
@@ -318,7 +302,7 @@ module Stoffle
     end
 
     def parse_expr_recursively(precedence = LOWEST_PRECEDENCE)
-      parsing_function = determine_parsing_function || determine_prefix_function
+      parsing_function = determine_parsing_function
       if parsing_function.nil?
         unrecognized_token_error
         return
@@ -338,5 +322,11 @@ module Stoffle
 
       expr
     end
+
+    alias_method :parse_true, :parse_boolean
+    alias_method :parse_false, :parse_boolean
+    alias_method :parse_fn, :parse_function_definition
+    alias_method :parse_if, :parse_conditional
+    alias_method :parse_while, :parse_repetition
   end
 end
