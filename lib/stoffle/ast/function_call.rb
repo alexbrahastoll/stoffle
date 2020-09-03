@@ -6,6 +6,11 @@ class Stoffle::AST::FunctionCall < Stoffle::AST::Expression
     @args = fn_args
   end
 
+  def function_name_as_str
+    # The instance variable @name is an AST::Identifier.
+    name.name
+  end
+
   def ==(other)
     children == other&.children
   end

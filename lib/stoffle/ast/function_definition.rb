@@ -7,6 +7,12 @@ class Stoffle::AST::FunctionDefinition < Stoffle::AST::Expression
     @body = fn_body
   end
 
+  # TODO FunctionCall has an exact copy of this method. Think on how to better extract it.
+  def function_name_as_str
+    # The instance variable @name is an AST::Identifier.
+    name.name
+  end
+
   def ==(other)
     children == other&.children
   end

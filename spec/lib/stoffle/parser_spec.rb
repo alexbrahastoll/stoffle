@@ -26,7 +26,7 @@ RSpec.describe Stoffle::Parser do
         var_binding = sfe_var_binding.new(ident, num)
         expected_prog = sfe_prog.new
         expected_prog.expressions.append(var_binding)
-        parser = Stoffle::Parser.new(tokens_from_source('var_binding_ok.sfe'))
+        parser = Stoffle::Parser.new(tokens_from_source('var_binding_ok_1.sfe'))
 
         parser.parse
 
@@ -34,7 +34,7 @@ RSpec.describe Stoffle::Parser do
       end
 
       it 'does result in a syntax error when the syntax is not respected' do
-        parser = Stoffle::Parser.new(tokens_from_source('var_binding_err.sfe'))
+        parser = Stoffle::Parser.new(tokens_from_source('var_binding_err_1.sfe'))
 
         parser.parse
 

@@ -23,4 +23,6 @@ Gem::Specification.new do |spec|
 
   spec.add_development_dependency 'pry', '~> 0.13.0'
   spec.add_development_dependency 'byebug', '~> 11.1', '>= 11.1.3'
+
+  spec.add_dependency 'activesupport', '~> 6.0'
 end

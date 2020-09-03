@@ -1,0 +1,4 @@
+my_var = 2 * -1
+println(my_var)
+my_var = "hey"
+println(my_var)
