@@ -1,0 +1,3 @@
+cond_result = if true
+              else
+              end

@@ -1,0 +1,9 @@
+if false or 2 * 2 == "hey"
+  println("IF block evaluated.")
+else
+  if (2 + 2) / 4 == 1
+    println("ELSE IF block evaluated.")
+  else
+    println("ELSE ELSE block evaluated.")
+  end
+end

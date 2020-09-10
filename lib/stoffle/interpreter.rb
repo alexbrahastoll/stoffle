@@ -32,6 +32,24 @@ module Stoffle
       env[var_binding.var_name_as_str] = interpret_node(var_binding.right)
     end
 
+    # TODO Empty blocks are accepted both for the IF and for the ELSE. For the IF, the parser returns a block with an empty collection of expressions. For the else, no block is constructed. The evaluation is already resulting in nil, which is the desired behavior. It would be better, however, if the parser also returned a block with no expressions for an ELSE with an empty block, as is the case in an IF with an empty block. Investigate this nuance of the parser in the future.
+    def interpret_conditional(conditional)
+      evaluated_cond = interpret_node(conditional.condition)
+
+      # We could implement the line below in a shorter way, but better to be explicit about truthiness in Stoffle.
+      if evaluated_cond == nil || evaluated_cond == false
+        return nil if conditional.when_false.nil?
+
+        last_value = nil
+        conditional.when_false.expressions.each { |expr| last_value = interpret_node(expr) }
+        last_value
+      else
+        last_value = nil
+        conditional.when_true.expressions.each { |expr| last_value = interpret_node(expr) }
+        last_value
+      end
+    end
+
     def interpret_function_definition(fn_def)
       env[fn_def.function_name_as_str] = fn_def
     end
@@ -76,8 +94,23 @@ module Stoffle
       #   interpret_node(binary_op.left) + interpret_node(binary_op.right)
       # end
 
-      # TODO Add type verification (e.g. the operator '*' cannot have strings as its operands)
-      interpret_node(binary_op.left).send(binary_op.operator, interpret_node(binary_op.right))
+      case binary_op.operator
+      when :and
+        interpret_node(binary_op.left) && interpret_node(binary_op.right)
+      when :or
+        interpret_node(binary_op.left) || interpret_node(binary_op.right)
+      else
+        # TODO Add type verification (e.g. the operator '*' cannot have strings as its operands)
+        interpret_node(binary_op.left).send(binary_op.operator, interpret_node(binary_op.right))
+      end
+    end
+
+    def interpret_boolean(boolean)
+      boolean.value
+    end
+
+    def interpret_nil(nil_node)
+      nil
     end
 
     def interpret_number(number)

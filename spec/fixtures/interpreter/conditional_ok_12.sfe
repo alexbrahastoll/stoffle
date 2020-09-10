@@ -1,0 +1,5 @@
+if true and false or true
+  println("IF block evaluated.")
+else
+  println("ELSE block evaluated.")
+end

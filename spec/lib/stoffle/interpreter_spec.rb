@@ -45,10 +45,134 @@ RSpec.describe Stoffle::Interpreter do
         expect(interpreter.output.first).to eq('0.0')
       end
     end
+
+    context 'conditionals with empty blocks' do
+      it 'does evaluate the conditional to nil' do
+        interpreter = Stoffle::Interpreter.new
+
+        interpreter.interpret(ast_from_source('conditional_ok_13.sfe'))
+
+        expect(interpreter.env.fetch('cond_result')).to be_nil
+      end
+    end
+
+    context 'conditionals having only an IF block' do
+      it 'does not evaluate the IF block when the condition is false' do
+        interpreter = Stoffle::Interpreter.new
+
+        interpreter.interpret(ast_from_source('conditional_ok_1.sfe'))
+
+        expect(interpreter.output.length).to eq(0)
+      end
+
+      it 'does not evaluate the IF block when the condition is falsey' do
+        interpreter = Stoffle::Interpreter.new
+
+        interpreter.interpret(ast_from_source('conditional_ok_2.sfe'))
+
+        expect(interpreter.output.length).to eq(0)
+      end
+
+      it 'does evaluate the IF block when the condition is true' do
+        interpreter = Stoffle::Interpreter.new
+
+        interpreter.interpret(ast_from_source('conditional_ok_3.sfe'))
+
+        expect(interpreter.output.length).to eq(1)
+        expect(interpreter.output.first).to eq('IF block evaluated.')
+      end
+
+      it 'does evaluate the IF block when the condition is truthy' do
+        interpreter = Stoffle::Interpreter.new
+
+        interpreter.interpret(ast_from_source('conditional_ok_4.sfe'))
+
+        expect(interpreter.output.length).to eq(1)
+        expect(interpreter.output.first).to eq('IF block evaluated.')
+      end
+    end
+
+    context 'conditionals having IF / ELSE blocks' do
+      it 'does evaluate the IF block when the condition is truthy' do
+        interpreter = Stoffle::Interpreter.new
+
+        interpreter.interpret(ast_from_source('conditional_ok_5.sfe'))
+
+        expect(interpreter.output.length).to eq(1)
+        expect(interpreter.output.first).to eq('IF block evaluated.')
+      end
+
+      it 'does evaluate the ELSE block when the condition is falsey' do
+        interpreter = Stoffle::Interpreter.new
+
+        interpreter.interpret(ast_from_source('conditional_ok_6.sfe'))
+
+        expect(interpreter.output.length).to eq(1)
+        expect(interpreter.output.first).to eq('ELSE block evaluated.')
+      end
+    end
+
+    context 'conditionals using logical operators' do
+      it 'does evaluate the IF block when an expression using AND is truthy' do
+        interpreter = Stoffle::Interpreter.new
+
+        interpreter.interpret(ast_from_source('conditional_ok_7.sfe'))
+
+        expect(interpreter.output.length).to eq(1)
+        expect(interpreter.output.first).to eq('IF block evaluated.')
+      end
+
+      it 'does evaluate the ELSE block when an expression using AND is falsey' do
+        interpreter = Stoffle::Interpreter.new
+
+        interpreter.interpret(ast_from_source('conditional_ok_8.sfe'))
+
+        expect(interpreter.output.length).to eq(1)
+        expect(interpreter.output.first).to eq('ELSE block evaluated.')
+      end
+
+      it 'does evaluate the IF block when an expression using OR is truthy' do
+        interpreter = Stoffle::Interpreter.new
+
+        interpreter.interpret(ast_from_source('conditional_ok_9.sfe'))
+
+        expect(interpreter.output.length).to eq(1)
+        expect(interpreter.output.first).to eq('IF block evaluated.')
+      end
+
+      it 'does evaluate the ELSE block when an expression using OR is falsey' do
+        interpreter = Stoffle::Interpreter.new
+
+        interpreter.interpret(ast_from_source('conditional_ok_10.sfe'))
+
+        expect(interpreter.output.length).to eq(1)
+        expect(interpreter.output.first).to eq('ELSE block evaluated.')
+      end
+
+      it 'does correctly interpret conditionals using both AND and OR' do
+        interpreter = Stoffle::Interpreter.new
+
+        interpreter.interpret(ast_from_source('conditional_ok_12.sfe'))
+
+        expect(interpreter.output.length).to eq(1)
+        expect(interpreter.output.first).to eq('IF block evaluated.')
+      end
+    end
+
+    context 'nested conditionals' do
+      it 'does correctly interpret nested conditionals' do
+        interpreter = Stoffle::Interpreter.new
+
+        interpreter.interpret(ast_from_source('conditional_ok_11.sfe'))
+
+        expect(interpreter.output.length).to eq(1)
+        expect(interpreter.output.first).to eq('ELSE IF block evaluated.')
+      end
+    end
   end
 
   def ast_from_source(filename)
-    source = File.read(Pathname.new(__dir__).join('..', '..', 'fixtures', filename))
+    source = File.read(Pathname.new(__dir__).join('..', '..', 'fixtures', 'interpreter', filename))
     lexer = Stoffle::Lexer.new(source)
     parser = Stoffle::Parser.new(lexer.start_tokenization)
     parser.parse
