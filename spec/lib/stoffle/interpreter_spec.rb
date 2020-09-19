@@ -6,7 +6,7 @@ RSpec.describe Stoffle::Interpreter do
       it 'does correctly evaluate a simple arithmetic expression' do
         interpreter = Stoffle::Interpreter.new
 
-        interpreter.interpret(ast_from_source('fn_call_ok_4.sfe'))
+        interpreter.interpret(ast_from_source('arithmetic_expr_ok_1.sfe'))
 
         expect(interpreter.output.length).to eq(1)
         expect(interpreter.output.first).to eq('4.0')
@@ -15,7 +15,7 @@ RSpec.describe Stoffle::Interpreter do
       it 'does correctly evaluate a complex arithmetic expression' do
         interpreter = Stoffle::Interpreter.new
 
-        interpreter.interpret(ast_from_source('fn_call_ok_5.sfe'))
+        interpreter.interpret(ast_from_source('arithmetic_expr_ok_2.sfe'))
 
         expect(interpreter.output.length).to eq(1)
         expect(interpreter.output.first).to eq('5.0')
@@ -43,6 +43,32 @@ RSpec.describe Stoffle::Interpreter do
 
         expect(interpreter.output.length).to eq(1)
         expect(interpreter.output.first).to eq('0.0')
+      end
+    end
+
+    context 'function calls' do
+      it 'does correctly call a defined function' do
+        interpreter = Stoffle::Interpreter.new
+
+        interpreter.interpret(ast_from_source('fn_call_ok_1.sfe'))
+
+        expect(interpreter.env['result']).to eq('my_fn was called.')
+      end
+
+      it 'does raise an error if the function was not defined' do
+        interpreter = Stoffle::Interpreter.new
+
+        expect do
+          interpreter.interpret(ast_from_source('fn_call_err_1.sfe'))
+        end.to raise_error(Stoffle::Error::Runtime::UndefinedFunction)
+      end
+
+      it 'does raise an error if the function was called before its definition' do
+        interpreter = Stoffle::Interpreter.new
+
+        expect do
+          interpreter.interpret(ast_from_source('fn_call_err_2.sfe'))
+        end.to raise_error(Stoffle::Error::Runtime::UndefinedFunction)
       end
     end
 

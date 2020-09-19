@@ -1,0 +1,5 @@
+fn my_fn
+  "my_fn was called."
+end
+
+result = my_fn()

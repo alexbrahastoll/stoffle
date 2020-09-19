@@ -17,6 +17,22 @@ module Stoffle
 
     private
 
+    def println(fn_call)
+      return false if fn_call.function_name_as_str != 'println'
+
+      result = interpret_node(fn_call.args.first).to_s
+      output << result
+      puts result
+      true
+    end
+
+    def fetch_function_definition(fn_name)
+      fn_def = env[fn_name]
+      raise Stoffle::Error::Runtime::UndefinedFunction.new(fn_name) if fn_def.nil?
+
+      fn_def
+    end
+
     def interpret_node(node)
       type = node.class.to_s.split('::').last.underscore # e.g., Stoffle::AST::FunctionCall becomes "function_call"
       interpreter_method = "interpret_#{type}"
@@ -55,18 +71,12 @@ module Stoffle
     end
 
     def interpret_function_call(fn_call)
-      if fn_call.function_name_as_str == 'println'
-        result = interpret_node(fn_call.args.first).to_s
-        output << result
-        puts result
-        return
-      end
+      return if println(fn_call)
 
       # TODO Deal with scopes.
-      # TODO Check if the function was actually defined.
       # TODO Check if the number of args match the number of params.
       # TODO Deal with return inside functions (ideia: return (with the expression result) from the evaluation when a return node is detected).
-      fn_def = env[fn_call.function_name_as_str]
+      fn_def = fetch_function_definition(fn_call.function_name_as_str)
       # Applying the values passed in to the respective function parameters.
       if fn_def.params != nil
         fn_def.params.each_with_index { |param, i| env[param.name] = interpret_node(fn_call.args[i]) }
