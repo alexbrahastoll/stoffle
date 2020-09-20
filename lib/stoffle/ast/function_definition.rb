@@ -1,7 +1,7 @@
 class Stoffle::AST::FunctionDefinition < Stoffle::AST::Expression
   attr_accessor :name, :params, :body
 
-  def initialize(fn_name = nil, fn_params = nil, fn_body = nil)
+  def initialize(fn_name = nil, fn_params = [], fn_body = nil)
     @name = fn_name
     @params = fn_params
     @body = fn_body

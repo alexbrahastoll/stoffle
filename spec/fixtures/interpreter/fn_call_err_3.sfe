@@ -1,0 +1,5 @@
+fn my_fn: arg_1, arg_2
+  "my_fn was called."
+end
+
+my_fn("hey")

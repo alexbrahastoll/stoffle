@@ -461,12 +461,12 @@ RSpec.describe Stoffle::Parser do
         block_1 = sfe_block.new
         block_1 << sfe_num.new(1.0)
         ident_1 = sfe_ident.new('one')
-        fn_def_1 = sfe_fn_def.new(ident_1, nil, block_1)
+        fn_def_1 = sfe_fn_def.new(ident_1, [], block_1)
 
         block_2 = sfe_block.new
         block_2 << sfe_num.new(2.0)
         ident_2 = sfe_ident.new('two')
-        fn_def_2 = sfe_fn_def.new(ident_2, nil, block_2)
+        fn_def_2 = sfe_fn_def.new(ident_2, [], block_2)
 
         expected_prog.expressions.append(fn_def_1, fn_def_2)
         parser = Stoffle::Parser.new(tokens_from_source('fn_def_ok_1.sfe'))

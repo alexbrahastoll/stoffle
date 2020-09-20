@@ -70,6 +70,14 @@ RSpec.describe Stoffle::Interpreter do
           interpreter.interpret(ast_from_source('fn_call_err_2.sfe'))
         end.to raise_error(Stoffle::Error::Runtime::UndefinedFunction)
       end
+
+      it 'does raise an error when the wrong number of arguments is given' do
+        interpreter = Stoffle::Interpreter.new
+
+        expect do
+          interpreter.interpret(ast_from_source('fn_call_err_3.sfe'))
+        end.to raise_error(Stoffle::Error::Runtime::WrongNumArg)
+      end
     end
 
     context 'conditionals with empty blocks' do

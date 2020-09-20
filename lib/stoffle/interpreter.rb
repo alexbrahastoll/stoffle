@@ -33,6 +33,19 @@ module Stoffle
       fn_def
     end
 
+    def assign_function_args_to_params(fn_call, fn_def)
+      given = fn_call.args.length
+      expected = fn_def.params.length
+      if given != expected
+        raise Stoffle::Error::Runtime::WrongNumArg.new(fn_def.function_name_as_str, given, expected)
+      end
+
+      # Applying the values passed in this particular function call to the respective defined parameters.
+      if fn_def.params != nil
+        fn_def.params.each_with_index { |param, i| env[param.name] = interpret_node(fn_call.args[i]) }
+      end
+    end
+
     def interpret_node(node)
       type = node.class.to_s.split('::').last.underscore # e.g., Stoffle::AST::FunctionCall becomes "function_call"
       interpreter_method = "interpret_#{type}"
@@ -74,13 +87,11 @@ module Stoffle
       return if println(fn_call)
 
       # TODO Deal with scopes.
-      # TODO Check if the number of args match the number of params.
       # TODO Deal with return inside functions (ideia: return (with the expression result) from the evaluation when a return node is detected).
       fn_def = fetch_function_definition(fn_call.function_name_as_str)
-      # Applying the values passed in to the respective function parameters.
-      if fn_def.params != nil
-        fn_def.params.each_with_index { |param, i| env[param.name] = interpret_node(fn_call.args[i]) }
-      end
+
+      assign_function_args_to_params(fn_call, fn_def)
+
       # Executing the function body.
       last_value = nil
       fn_def.body.expressions.each { |expr| last_value = interpret_node(expr) }
