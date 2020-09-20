@@ -1,18 +1,17 @@
 module Stoffle
   class Interpreter
-    attr_reader :program, :output, :env
+    attr_reader :program, :output, :env, :call_stack
 
     def initialize
       @output = []
       @env = {}
+      @call_stack = []
     end
 
     def interpret(ast)
       @program = ast
 
-      program.expressions.each do |expr|
-        interpret_node(expr)
-      end
+      interpret_nodes(program.expressions)
     end
 
     private
@@ -33,6 +32,7 @@ module Stoffle
       fn_def
     end
 
+    # TODO The current implementation will not work when we have recursive calls!
     def assign_function_args_to_params(fn_call, fn_def)
       given = fn_call.args.length
       expected = fn_def.params.length
@@ -46,10 +46,31 @@ module Stoffle
       end
     end
 
-    def interpret_node(node)
-      type = node.class.to_s.split('::').last.underscore # e.g., Stoffle::AST::FunctionCall becomes "function_call"
-      interpreter_method = "interpret_#{type}"
+    def return_detected?(node)
+      node.type == 'return'
+    end
 
+    def interpret_nodes(nodes)
+      last_value = nil
+
+      # TODO Do not allow the usage of return outside functions.
+      # TODO Possível solução para lidar com return:
+      # ter uma variável @call_stack_size e uma variável @unwind_call_stack
+      # caso @unwind_call_stack seja true e @call_stack_size ainda seja igual a @call_stack.length, continuar retornando.
+      # quando @call_stack.length for menor do que @call_stack_size, parar de retornar e zerar as duas variáveis.
+      nodes.each do |node|
+        last_value = interpret_node(node)
+
+        binding.pry
+
+        return last_value if return_detected?(node)
+      end
+
+      last_value
+    end
+
+    def interpret_node(node)
+      interpreter_method = "interpret_#{node.type}"
       send(interpreter_method, node)
     end
 
@@ -69,13 +90,9 @@ module Stoffle
       if evaluated_cond == nil || evaluated_cond == false
         return nil if conditional.when_false.nil?
 
-        last_value = nil
-        conditional.when_false.expressions.each { |expr| last_value = interpret_node(expr) }
-        last_value
+        interpret_nodes(conditional.when_false.expressions)
       else
-        last_value = nil
-        conditional.when_true.expressions.each { |expr| last_value = interpret_node(expr) }
-        last_value
+        interpret_nodes(conditional.when_true.expressions)
       end
     end
 
@@ -93,9 +110,14 @@ module Stoffle
       assign_function_args_to_params(fn_call, fn_def)
 
       # Executing the function body.
-      last_value = nil
-      fn_def.body.expressions.each { |expr| last_value = interpret_node(expr) }
-      last_value
+      call_stack << fn_call.function_name_as_str
+      value = interpret_nodes(fn_def.body.expressions)
+      call_stack.pop
+      value
+    end
+
+    def interpret_return(ret)
+      interpret_node(ret.expression)
     end
 
     # TODO Is this implementation REALLY the most straightforward in Ruby (apart from using eval)?

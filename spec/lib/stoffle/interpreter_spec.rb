@@ -39,7 +39,7 @@ RSpec.describe Stoffle::Interpreter do
       it 'does correctly define a function' do
         interpreter = Stoffle::Interpreter.new
 
-        interpreter.interpret(ast_from_source('fn_def_ok_4.sfe'))
+        interpreter.interpret(ast_from_source('fn_def_ok_1.sfe'))
 
         expect(interpreter.output.length).to eq(1)
         expect(interpreter.output.first).to eq('0.0')
@@ -77,6 +77,16 @@ RSpec.describe Stoffle::Interpreter do
         expect do
           interpreter.interpret(ast_from_source('fn_call_err_3.sfe'))
         end.to raise_error(Stoffle::Error::Runtime::WrongNumArg)
+      end
+    end
+
+    context 'return' do
+      it 'does correctly abort a function evaluation when a return is detected' do
+        interpreter = Stoffle::Interpreter.new
+
+        interpreter.interpret(ast_from_source('return_ok_1.sfe'))
+
+        expect(interpreter.env['result']).to eq(true)
       end
     end
 

@@ -15,6 +15,10 @@ module Stoffle
       def children
         []
       end
+
+      def type
+        self.class.to_s.split('::').last.underscore # e.g., Stoffle::AST::FunctionCall becomes "function_call"
+      end
     end
   end
 end
