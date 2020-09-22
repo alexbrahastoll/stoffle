@@ -88,6 +88,14 @@ RSpec.describe Stoffle::Interpreter do
 
         expect(interpreter.env['result']).to eq(true)
       end
+
+      it 'does correctly handle multiple functions returning one after another' do
+        interpreter = Stoffle::Interpreter.new
+
+        interpreter.interpret(ast_from_source('return_ok_2.sfe'))
+
+        expect(interpreter.env['result']).to eq(true)
+      end
     end
 
     context 'conditionals with empty blocks' do

@@ -1,0 +1,17 @@
+fn is_zero: num
+  if check_zero(num)
+    return true
+  end
+
+  false
+end
+
+fn check_zero: num_to_be_checked
+  if num_to_be_checked == 0
+    return true
+  end
+
+  false
+end
+
+result = is_zero(0)

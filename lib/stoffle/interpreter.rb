@@ -1,11 +1,12 @@
 module Stoffle
   class Interpreter
-    attr_reader :program, :output, :env, :call_stack
+    attr_reader :program, :output, :env, :call_stack, :unwind_call_stack
 
     def initialize
       @output = []
       @env = {}
       @call_stack = []
+      @unwind_call_stack = -1
     end
 
     def interpret(ast)
@@ -15,6 +16,8 @@ module Stoffle
     end
 
     private
+
+    attr_writer :unwind_call_stack
 
     def println(fn_call)
       return false if fn_call.function_name_as_str != 'println'
@@ -53,17 +56,22 @@ module Stoffle
     def interpret_nodes(nodes)
       last_value = nil
 
-      # TODO Do not allow the usage of return outside functions.
-      # TODO Possível solução para lidar com return:
-      # ter uma variável @call_stack_size e uma variável @unwind_call_stack
-      # caso @unwind_call_stack seja true e @call_stack_size ainda seja igual a @call_stack.length, continuar retornando.
-      # quando @call_stack.length for menor do que @call_stack_size, parar de retornar e zerar as duas variáveis.
+      # TODO Do not allow the usage of "return" outside functions (IDEA: the call stack length must be greater than zero when a return is detected).
       nodes.each do |node|
         last_value = interpret_node(node)
 
-        binding.pry
+        if return_detected?(node)
+          self.unwind_call_stack = call_stack.length # We store the current stack level to know when to stop returning.
+          return last_value
+        end
 
-        return last_value if return_detected?(node)
+        if unwind_call_stack == call_stack.length
+          # We are still inside a function that returned, so we keep on bubbling up from its structures (e.g., conditionals, loops etc).
+          return last_value
+        elsif unwind_call_stack > call_stack.length
+          # We returned from the function, so we reset the "unwind indicator".
+          self.unwind_call_stack = -1
+        end
       end
 
       last_value
@@ -104,7 +112,6 @@ module Stoffle
       return if println(fn_call)
 
       # TODO Deal with scopes.
-      # TODO Deal with return inside functions (ideia: return (with the expression result) from the evaluation when a return node is detected).
       fn_def = fetch_function_definition(fn_call.function_name_as_str)
 
       assign_function_args_to_params(fn_call, fn_def)

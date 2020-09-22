@@ -1,6 +1,5 @@
 fn is_zero: num
   if num == 0
-    println("Inside IF")
     return true
   end
 
