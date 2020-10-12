@@ -1,0 +1,7 @@
+my_global_var = "Value given outside any function"
+
+fn my_func
+  my_global_var = "Value given inside my_func()"
+end
+
+my_func()

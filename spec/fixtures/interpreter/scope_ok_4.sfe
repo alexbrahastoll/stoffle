@@ -1,0 +1,10 @@
+param_1 = "A global var"
+println(param_1)
+
+fn my_func: param_1, param_2
+  println(param_1)
+  println(param_2)
+end
+
+my_func("fn call arg 1", "fn call arg 2")
+param_1 # Should not raise an error, since param_1 is a global.

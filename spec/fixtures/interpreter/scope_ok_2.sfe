@@ -1,0 +1,7 @@
+fn my_func
+  my_local_var = "A local variable"
+  println(my_local_var)
+end
+
+my_func()
+println(my_local_var) # This line should raise an error, since my_local_var does not exist in the global scope.

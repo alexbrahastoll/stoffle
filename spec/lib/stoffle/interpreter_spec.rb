@@ -80,6 +80,61 @@ RSpec.describe Stoffle::Interpreter do
       end
     end
 
+    context 'recursive function calls' do
+      it 'does correctly handle recursive function calls' do
+        interpreter = Stoffle::Interpreter.new
+
+        interpreter.interpret(ast_from_source('recursion_ok_1.sfe'))
+
+        expect(interpreter.env['f12']).to eq(144.0)
+      end
+    end
+
+    context 'scope of variables' do
+      it 'does assign to an existing global variable when inside a function' do
+        interpreter = Stoffle::Interpreter.new
+
+        interpreter.interpret(ast_from_source('scope_ok_1.sfe'))
+
+        expect(interpreter.env['my_global_var']).to eq('Value given inside my_func()')
+      end
+
+      it 'does declare and assign to a local variable when there is no global with the same name' do
+        interpreter = Stoffle::Interpreter.new
+
+        expect do
+          interpreter.interpret(ast_from_source('scope_ok_2.sfe'))
+        end.to raise_error(Stoffle::Error::Runtime::UndefinedVariable)
+        expect(interpreter.output.length).to eq(1)
+        expect(interpreter.output[0]).to eq('A local variable')
+      end
+
+      it 'does create a local var for each function param when there is no global using the same names' do
+        interpreter = Stoffle::Interpreter.new
+
+        expect do
+          interpreter.interpret(ast_from_source('scope_ok_3.sfe'))
+        end.to raise_error(Stoffle::Error::Runtime::UndefinedVariable)
+        expect(interpreter.env['param_3']).to eq('A global var')
+        expect(interpreter.output.length).to eq(2)
+        expect(interpreter.output[0]).to eq('param_1')
+        expect(interpreter.output[1]).to eq('param_2')
+      end
+
+      it 'does assign to a global var when a param uses the same name of an existing global var' do
+        interpreter = Stoffle::Interpreter.new
+
+        interpreter.interpret(ast_from_source('scope_ok_4.sfe'))
+
+        expect(interpreter.output.length).to eq(3)
+        expect(interpreter.output[0]).to eq('A global var')
+        expect(interpreter.output[1]).to eq('fn call arg 1')
+        expect(interpreter.output[2]).to eq('fn call arg 2')
+        expect(interpreter.env['param_1']).to eq('fn call arg 1')
+        expect(interpreter.env.has_key?('param_2')).to eq(false)
+      end
+    end
+
     context 'return' do
       it 'does correctly abort a function evaluation when a return is detected' do
         interpreter = Stoffle::Interpreter.new
