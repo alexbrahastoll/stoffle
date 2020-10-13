@@ -293,6 +293,25 @@ RSpec.describe Stoffle::Interpreter do
         expect(interpreter.output.first).to eq('ELSE IF block evaluated.')
       end
     end
+
+    context 'repetitions (aka loops)' do
+      it 'does correctly evaluate a repetition' do
+        interpreter = Stoffle::Interpreter.new
+
+        interpreter.interpret(ast_from_source('repetition_ok_1.sfe'))
+
+        expect(interpreter.env.fetch('i')).to eq(9.0)
+      end
+
+      it 'does correctly evaluate a repetition with a complex condition' do
+        interpreter = Stoffle::Interpreter.new
+
+        interpreter.interpret(ast_from_source('repetition_ok_2.sfe'))
+
+        expect(interpreter.env.fetch('i')).to eq(5.0)
+        expect(interpreter.env.fetch('continue_loop')).to eq(false)
+      end
+    end
   end
 
   def ast_from_source(filename)

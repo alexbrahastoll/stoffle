@@ -134,6 +134,12 @@ module Stoffle
       end
     end
 
+    def interpret_repetition(repetition)
+      while interpret_node(repetition.condition)
+        interpret_nodes(repetition.block.expressions)
+      end
+    end
+
     def interpret_function_definition(fn_def)
       env[fn_def.function_name_as_str] = fn_def
     end

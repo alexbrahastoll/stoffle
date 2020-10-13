@@ -1,0 +1,8 @@
+i = 0
+continue_loop = true
+while i < 9 and continue_loop
+  i = i + 1
+  if i == 5
+    continue_loop = false
+  end
+end
