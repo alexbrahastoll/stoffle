@@ -238,6 +238,14 @@ RSpec.describe Stoffle::Interpreter do
         expect(interpreter.output.first).to eq('ELSE block evaluated.')
       end
 
+      it 'does short-circuit when the left operand of AND is falsey' do
+        interpreter = Stoffle::Interpreter.new
+
+        interpreter.interpret(ast_from_source('conditional_ok_14.sfe'))
+
+        expect(interpreter.output.length).to eq(0)
+      end
+
       it 'does evaluate the IF block when an expression using OR is truthy' do
         interpreter = Stoffle::Interpreter.new
 
@@ -254,6 +262,15 @@ RSpec.describe Stoffle::Interpreter do
 
         expect(interpreter.output.length).to eq(1)
         expect(interpreter.output.first).to eq('ELSE block evaluated.')
+      end
+
+      it 'does short-circuit when the left operand of OR is truthy' do
+        interpreter = Stoffle::Interpreter.new
+
+        interpreter.interpret(ast_from_source('conditional_ok_15.sfe'))
+
+        expect(interpreter.output.length).to eq(0)
+        expect(interpreter.env['short_circuited']).to eq(true)
       end
 
       it 'does correctly interpret conditionals using both AND and OR' do
