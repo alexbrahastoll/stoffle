@@ -604,7 +604,7 @@ RSpec.describe Stoffle::Parser do
   end
 
   def tokens_from_source(filename)
-    source = File.read(Pathname.new(__dir__).join('..', '..', 'fixtures', filename))
+    source = File.read(Pathname.new(__dir__).join('..', '..', 'fixtures', 'parser', filename))
 
     Stoffle::Lexer.new(source).start_tokenization
   end

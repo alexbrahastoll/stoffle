@@ -1,0 +1,6 @@
+num = -2
+if num > 0
+  println("The number is greater than zero.")
+else
+  println("The number is less than or equal to zero.")
+end

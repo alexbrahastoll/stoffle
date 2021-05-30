@@ -1,0 +1,13 @@
+fn sum_integers: first_integer, last_integer
+  i = first_integer
+  sum = 0
+  while i <= last_integer
+    sum = sum + i
+
+    i = i + 1
+  end
+
+  println(sum)
+end
+
+sum_integers(1, 100)

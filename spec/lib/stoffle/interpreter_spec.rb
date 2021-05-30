@@ -209,13 +209,22 @@ RSpec.describe Stoffle::Interpreter do
         expect(interpreter.output.first).to eq('IF block evaluated.')
       end
 
-      it 'does evaluate the ELSE block when the condition is falsey' do
+      it 'does evaluate the ELSE block when the condition is falsey - example 1' do
         interpreter = Stoffle::Interpreter.new
 
         interpreter.interpret(ast_from_source('conditional_ok_6.sfe'))
 
         expect(interpreter.output.length).to eq(1)
         expect(interpreter.output.first).to eq('ELSE block evaluated.')
+      end
+
+      it 'does evaluate the ELSE block when the condition is falsey - example 2' do
+        interpreter = Stoffle::Interpreter.new
+
+        interpreter.interpret(ast_from_source('conditional_ok_16.sfe'))
+
+        expect(interpreter.output.length).to eq(1)
+        expect(interpreter.output.first).to eq('The number is less than or equal to zero.')
       end
     end
 

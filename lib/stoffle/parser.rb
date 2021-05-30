@@ -38,6 +38,8 @@ module Stoffle
         node = parse_expr_recursively
         ast << node if node != nil
       end
+
+      ast
     end
 
     private
