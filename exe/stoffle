@@ -1,3 +1,13 @@
 #!/usr/bin/env ruby
 
-require "stoffle"
+require_relative '../lib/stoffle'
+
+path = ARGV[0]
+source = File.read(path)
+lexer = Stoffle::Lexer.new(source)
+parser = Stoffle::Parser.new(lexer.start_tokenization)
+interpreter = Stoffle::Interpreter.new
+
+interpreter.interpret(parser.parse)
+
+exit(0)
