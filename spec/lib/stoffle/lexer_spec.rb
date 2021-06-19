@@ -139,7 +139,7 @@ RSpec.describe Stoffle::Lexer do
         source = "my_var = 1\n@"
         lexer = Stoffle::Lexer.new(source)
 
-        expect { lexer.start_tokenization }.to raise_error('Unknown character.')
+        expect { lexer.start_tokenization }.to raise_error('Unknown character @')
       end
     end
   end

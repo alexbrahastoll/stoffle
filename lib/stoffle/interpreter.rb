@@ -66,11 +66,12 @@ module Stoffle
     def interpret_nodes(nodes)
       last_value = nil
 
-      # TODO Do not allow the usage of "return" outside functions (IDEA: the call stack length must be greater than zero when a return is detected).
       nodes.each do |node|
         last_value = interpret_node(node)
 
         if return_detected?(node)
+          raise Stoffle::Error::Runtime::UnexpectedReturn unless call_stack.length > 0
+
           self.unwind_call_stack = call_stack.length # We store the current stack level to know when to stop returning.
           return last_value
         end

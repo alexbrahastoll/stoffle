@@ -151,6 +151,14 @@ RSpec.describe Stoffle::Interpreter do
 
         expect(interpreter.env['result']).to eq(true)
       end
+
+      it 'does raise an error when a return is used outside a function' do
+        interpreter = Stoffle::Interpreter.new
+
+        expect do
+          interpreter.interpret(ast_from_source('return_err_1.sfe'))
+        end.to raise_error(Stoffle::Error::Runtime::UnexpectedReturn)
+      end
     end
 
     context 'conditionals with empty blocks' do
@@ -319,6 +327,17 @@ RSpec.describe Stoffle::Interpreter do
 
         expect(interpreter.env.fetch('i')).to eq(5.0)
         expect(interpreter.env.fetch('continue_loop')).to eq(false)
+      end
+    end
+
+    context 'complex programs' do
+      it 'does correctly interpret an integer summation program' do
+        interpreter = Stoffle::Interpreter.new
+
+        interpreter.interpret(ast_from_source('complex_program_ok_1.sfe'))
+
+        expect(interpreter.output.length).to eq(1)
+        expect(interpreter.output.first).to eq('5050.0')
       end
     end
   end

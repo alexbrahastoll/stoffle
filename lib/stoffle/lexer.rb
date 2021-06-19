@@ -58,7 +58,7 @@ module Stoffle
       if token
         tokens << token
       else
-        raise('Unknown character.')
+        raise("Unknown character #{c}")
       end
     end
 
