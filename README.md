@@ -2,13 +2,11 @@
 
 Stoffle is a toy programming language developed as a series of posts for the [Honeybadger blog](https://www.honeybadger.io/blog/) by [Alex Braha Stoll](http://alexbs.com.br/).
 
-It is currently a work in progress. Here is its current state:
+The language implementation itself is done, but there are still some posts pending publication.
 
 - Lexer (done)
 - Parser (done)
-- Interpreter (wip)
-
-When studying Stoffle's current implementation, please have in mind that even parts that are mostly done can change as we get closer to finishing the implementation as a whole and new ideas emerge.
+- Interpreter (done)
 
 ## Published blog posts
 
@@ -16,6 +14,8 @@ If you are interested in this project, I highly recommend you read the blog post
 
 - [Building a Toy Programming Language in Ruby](https://www.honeybadger.io/blog/stoffle-introduction/)
 - [Building a Toy Lexer in Ruby](https://www.honeybadger.io/blog/building-lexer-ruby/)
+- [Building a Programming Language in Ruby: The Parser](https://www.honeybadger.io/blog/ruby-parser-stoffle/)
+- [Building A New Programming Language In Ruby: The Interpreter](https://www.honeybadger.io/blog/building-interpreter-ruby/)
 
 ## Where does the name Stoffle come from?
 
