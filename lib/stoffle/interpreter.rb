@@ -176,12 +176,6 @@ module Stoffle
     end
 
     def interpret_binary_operator(binary_op)
-      # Verbose implementation; might be interesting to comment about it in the article.
-      # case binary_op.operator
-      # when :'+'
-      #   interpret_node(binary_op.left) + interpret_node(binary_op.right)
-      # end
-
       case binary_op.operator
       when :and
         interpret_node(binary_op.left) && interpret_node(binary_op.right)
