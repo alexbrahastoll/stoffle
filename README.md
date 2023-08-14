@@ -17,6 +17,7 @@ If you are interested in this project, I highly recommend you read the blog post
 - [Building a Programming Language in Ruby: The Parser](https://www.honeybadger.io/blog/ruby-parser-stoffle/)
 - [Building A New Programming Language In Ruby: The Interpreter](https://www.honeybadger.io/blog/building-interpreter-ruby/)
 - [Building a Programming Language in Ruby: The Interpreter, Part 2](https://www.honeybadger.io/blog/stoffle-interpreter-2/)
+- [Building a New Programming Language in Ruby: Wrapping Up](https://www.honeybadger.io/blog/ruby-stoffle-conclusion/)
 
 ## Where does the name Stoffle come from?
 
